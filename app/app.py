@@ -21,16 +21,15 @@ This application uses population data and machine learning to recommend optimal 
 for electric vehicle charging stations across Kenyan counties.
 """)
 # Load data
-@st.cache
+@st.cache_data
 def load_data():
     county_df = pd.read_csv("./utilities/county_data_clean.csv")
     kenya_stations = pd.read_csv("./utilities/kenya_stations_clean.csv")
-    new_stations = pd.read_csv("./utilities/new_stations.csv")
-    return county_df, kenya_stations, new_stations
+    return county_df, kenya_stations
 
-county_df, kenya_stations, new_stations = load_data()
+county_df, kenya_stations = load_data()
 # Load model
-@st.cache
+@st.cache_resource
 def load_models():
     additional_station_model = joblib.load("../ml_models/additional_station_model.joblib")
     county_kmeans_models = joblib.load("../ml_models/county_models.joblib")
@@ -63,76 +62,3 @@ existing_stations_input = st.sidebar.number_input(
 )
 
 predict_button = st.sidebar.button("Predict Stations")
-
-# Dashboard Page
-if page == "Dashboard":
-    st.header("📊 Current EV Charging Infrastructure Dashboard")
-
-    col1, col2, col3, col4 = st.columns(4)
-
-    with col1:
-        total_stations = county_df['num_stations'].sum()
-        st.metric("Total Charging Stations", int(total_stations))
-
-    with col2:
-        counties_with_stations = len(county_df[county_df['num_stations'] > 0])
-        st.metric("Counties with Stations", counties_with_stations)
-
-    with col3:
-        total_population = county_df['population'].sum()
-        st.metric("Total Population Covered", f"{total_population:,.0f}")
-
-    with col4:
-        required = county_df['required_stations'].sum()
-        st.metric("Total Stations Needed", int(required))
-elif page == "Infrastructure Gap Analysis":
-
-    st.header("📉 Infrastructure Gap Analysis")
-
-    # Sort by additional stations
-    gap_df = county_df.sort_values("additional_stations", ascending=False)
-
-    fig = px.bar(
-        gap_df,
-        x="additional_stations",
-        y="county",
-        orientation="h",
-        title="Additional Stations Required per County",
-        color="additional_stations"
-    )
-
-    st.plotly_chart(fig, use_container_width=True)
-
-    st.subheader("Top 5 Counties with Highest Infrastructure Gap")
-
-    st.dataframe(gap_df[["county", "population", "num_stations", 
-                         "required_stations", "additional_stations"]].head())
-elif page == "Station Placement":
-
-    st.header("Optimized EV Charging Station Locations")
-
-    kenya_map = folium.Map(location=[0.5, 37], zoom_start=6)
-
-    # Existing stations
-    for _, row in kenya_stations.iterrows():
-        folium.CircleMarker(
-            location=[row["latitude"], row["longitude"]],
-            radius=5,
-            popup=row["station name"],
-            color="green",
-            fill=True
-        ).add_to(kenya_map)
-
-    # Predicted stations
-    for _, row in new_stations.iterrows():
-        folium.CircleMarker(
-            location=[row["latitude"], row["longitude"]],
-            radius=6,
-            popup=row["county"],
-            color="blue",
-            fill=True
-        ).add_to(kenya_map)
-
-    st.markdown("Green = Existing Stations  |   Blue = Recommended Stations")
-
-    folium_static(kenya_map)       
