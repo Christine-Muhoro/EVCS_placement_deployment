@@ -47,7 +47,7 @@ st.sidebar.title("User Input")
 selected_county = st.sidebar.selectbox("Select County", county_df["county"].unique())
 population_input = st.sidebar.number_input("Enter Population (Optional)", min_value=0, value=0)
 existing_stations_input = st.sidebar.number_input("Enter Existing Stations (Optional)", min_value=0, value=0)
-predict_button = st.sidebar.button("Predict Stations")
+predict_button = st.sidebar.button("Predict Stations and Locations")
 
 
 def allocate_new_stations(county, kenya_stations, k):
