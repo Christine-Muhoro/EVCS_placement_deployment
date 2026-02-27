@@ -27,8 +27,8 @@ for electric vehicle charging stations across Kenyan counties.
 # Load data
 @st.cache_data
 def load_data():
-    county_df = pd.read_csv("./utilities/county_data_clean.csv")
-    kenya_stations = pd.read_csv("./utilities/kenya_stations_clean.csv")
+    county_df = pd.read_csv("./Data/processed/county_data_clean.csv")
+    kenya_stations = pd.read_csv("./Data/processed/kenya_stations_clean.csv")
     return county_df, kenya_stations
 
 county_df, kenya_stations = load_data()
