@@ -36,8 +36,8 @@ county_df, kenya_stations = load_data()
 # Load models
 @st.cache_resource
 def load_models():
-    additional_station_model = joblib.load("../ml_models/additional_station_model.joblib")
-    county_kmeans_models = joblib.load("../ml_models/county_models.joblib")
+    additional_station_model = joblib.load("./ml_models/additional_station_model.joblib")
+    county_kmeans_models = joblib.load("./ml_models/county_models.joblib")
     return additional_station_model, county_kmeans_models
 
 additional_station_model, county_kmeans_models = load_models()
