@@ -109,57 +109,59 @@ if predict_button:
 
 st.write("Sklearn version:", sklearn.__version__)
 
-    # Run dynamic KMeans allocation
-    kmeans_model, centers, training_points = allocate_new_stations(
-        county_data,
-        kenya_stations,
-        predicted_additional
+st.success(f"Predicted Additional Stations for {selected_county}: {predicted_additional}")
+
+# Run dynamic KMeans allocation
+kmeans_model, centers, training_points = allocate_new_stations(
+    county_data,
+    kenya_stations,
+    predicted_additional
+)
+
+if predicted_additional == 0:
+    st.info("No additional stations needed for this county.")
+else:
+    # Convert centers to DataFrame
+    new_stations_df = pd.DataFrame(
+        centers,
+        columns=["latitude", "longitude"]
+    )
+    
+    st.subheader("Predicted New Station Locations")
+    st.dataframe(new_stations_df)
+
+    # Create Map
+    st.subheader("Station Map")
+
+    m = folium.Map(
+        location=[county_data["county_lat"], county_data["county_lon"]],
+        zoom_start=9
     )
 
-    if predicted_additional == 0:
-        st.info("No additional stations needed for this county.")
-    else:
-        # Convert centers to DataFrame
-        new_stations_df = pd.DataFrame(
-            centers,
-            columns=["latitude", "longitude"]
-        )
-        
-        st.subheader("Predicted New Station Locations")
-        st.dataframe(new_stations_df)
+    # Existing stations (Blue)
+    county_existing = kenya_stations[
+        kenya_stations["county"] == selected_county
+    ]
 
-        # Create Map
-        st.subheader("Station Map")
+    for _, row in county_existing.iterrows():
+        folium.CircleMarker(
+            location=[row["latitude"], row["longitude"]],
+            radius=5,
+            color="blue",
+            fill=True,
+            fill_color="blue",
+            popup="Existing Station"
+        ).add_to(m)
 
-        m = folium.Map(
-            location=[county_data["county_lat"], county_data["county_lon"]],
-            zoom_start=9
-        )
+    # New predicted stations (Red)
+    for _, row in new_stations_df.iterrows():
+        folium.CircleMarker(
+            location=[row["latitude"], row["longitude"]],
+            radius=6,
+            color="red",
+            fill=True,
+            fill_color="red",
+            popup="Predicted Station"
+        ).add_to(m)
 
-        # Existing stations (Blue)
-        county_existing = kenya_stations[
-            kenya_stations["county"] == selected_county
-        ]
-
-        for _, row in county_existing.iterrows():
-            folium.CircleMarker(
-                location=[row["latitude"], row["longitude"]],
-                radius=5,
-                color="blue",
-                fill=True,
-                fill_color="blue",
-                popup="Existing Station"
-            ).add_to(m)
-
-        # New predicted stations (Red)
-        for _, row in new_stations_df.iterrows():
-            folium.CircleMarker(
-                location=[row["latitude"], row["longitude"]],
-                radius=6,
-                color="red",
-                fill=True,
-                fill_color="red",
-                popup="Predicted Station"
-            ).add_to(m)
-
-        folium_static(m)
+    folium_static(m)
